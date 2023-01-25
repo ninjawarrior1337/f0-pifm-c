@@ -1,0 +1,9 @@
+App(
+    appid="pifm",
+    name="PiFM",
+    apptype=FlipperAppType.EXTERNAL,
+    entry_point="app_entry_point",
+    cdefines=["APP_PIFM"],
+    requires=["gui"],
+    stack_size=1 * 1024,
+)
