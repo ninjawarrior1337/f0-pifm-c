@@ -2,4 +2,12 @@
 
 #include "app.h"
 
+#include "DG_dynarr.h"
+
+DA_TYPEDEF(int, IntArrType);
+
+typedef struct {
+    IntArrType int_arr;
+} MainViewModel;
+
 extern ViewConfig view_main_config;

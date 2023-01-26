@@ -12,17 +12,11 @@
 #include <input/input.h>
 #include <notification/notification_messages.h>
 
-#include "DG_dynarr.h"
-
-DA_TYPEDEF(int, IntArrType);
-
 typedef struct app_t {
     Gui* gui;
     ViewDispatcher* view_dispatcher;
     ViewPort* view_port;
     NotificationApp* notifications;
-
-    IntArrType int_arr;
 } App;
 
 typedef enum {

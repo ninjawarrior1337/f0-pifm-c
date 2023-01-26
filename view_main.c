@@ -9,31 +9,43 @@ static uint32_t handle_back(void* ctx) {
 
 static void handle_enter(void* ctx) {
     AppView* appview = ctx;
-    da_init(appview->app->int_arr);
+    view_allocate_model(appview->view, ViewModelTypeLocking, sizeof(MainViewModel));
+
+    MainViewModel* model = view_get_model(appview->view);
+    da_init(model->int_arr);
+
+    view_commit_model(appview->view, true);
 }
 
 static void handle_exit(void* ctx) {
     AppView* appview = ctx;
-    da_free(appview->app->int_arr);
+    MainViewModel* model = view_get_model(appview->view);
+
+    da_free(model->int_arr);
+
+    view_commit_model(appview->view, true);
+    view_free_model(appview->view);
 }
 
 static bool handle_input(InputEvent* event, void* ctx) {
-    UNUSED(event);
     AppView* appview = ctx;
-    da_push(appview->app->int_arr, 0);
-    FURI_LOG_I("App", "Input event %d", da_count(appview->app->int_arr));
+    UNUSED(event);
+    MainViewModel* model = view_get_model(appview->view);
+    da_push(model->int_arr, 0);
+    FURI_LOG_I("App", "Input event %d", da_count(model->int_arr));
+    view_commit_model(appview->view, true);
+
     return false;
 }
 
 static void handle_draw(Canvas* const canvas, void* ctx) {
-    AppView* appview = ctx;
-    // UNUSED(appview);
+    MainViewModel* model = ctx;
 
     canvas_clear(canvas);
     canvas_set_font(canvas, FontPrimary);
     canvas_draw_str_aligned(canvas, 64, 32, AlignCenter, AlignCenter, "View Dispatcher example");
     char str[32];
-    FURI_LOG_I("App", "Input event %d", da_count(appview->app->int_arr));
+    snprintf(str, 32, "Input events: %d", da_count(model->int_arr));
     canvas_draw_str_aligned(canvas, 64, 48, AlignCenter, AlignCenter, str);
 }
 
