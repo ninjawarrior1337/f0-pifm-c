@@ -9,18 +9,27 @@
 #include <gui/gui.h>
 #include <gui/view.h>
 #include <gui/view_dispatcher.h>
+#include <gui/modules/submenu.h>
 #include <input/input.h>
+#include <furi_hal_uart.h>
 #include <notification/notification_messages.h>
+
+#define TAG "PiFM-F0"
+#define BAUDRATE 115200
 
 typedef struct app_t {
     Gui* gui;
     ViewDispatcher* view_dispatcher;
     NotificationApp* notifications;
+    Submenu* submenu;
 } App;
 
 typedef enum {
     ViewMain,
+    ViewSetFreq,
 } ViewID;
+
+typedef enum { PiFMStart, PiFMStop, PiFMSetFreq, PiFMSetSong } PiFMSubmenuEntries;
 
 typedef struct {
     ViewID id;

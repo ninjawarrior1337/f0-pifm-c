@@ -10,4 +10,4 @@ typedef struct {
     IntArrType int_arr;
 } MainViewModel;
 
-extern ViewConfig view_main_config;
+extern ViewConfig view_set_freq_config;

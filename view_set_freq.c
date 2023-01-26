@@ -1,10 +1,11 @@
-#include "view_main.h"
+#include "view_set_freq.h"
 #include <furi.h>
 #include <furi_hal.h>
 
 static uint32_t handle_back(void* ctx) {
     UNUSED(ctx);
-    return VIEW_NONE;
+
+    return ViewMain;
 }
 
 static void handle_enter(void* ctx) {
@@ -20,20 +21,20 @@ static void handle_enter(void* ctx) {
 static void handle_exit(void* ctx) {
     AppView* appview = ctx;
     MainViewModel* model = view_get_model(appview->view);
-
     da_free(model->int_arr);
-
-    view_commit_model(appview->view, true);
-    view_free_model(appview->view);
+    view_commit_model(appview->view, false);
 }
 
 static bool handle_input(InputEvent* event, void* ctx) {
     AppView* appview = ctx;
     UNUSED(event);
     MainViewModel* model = view_get_model(appview->view);
-    da_push(model->int_arr, 0);
-    FURI_LOG_I("App", "Input event %d", da_count(model->int_arr));
-    view_commit_model(appview->view, true);
+
+    if(model != NULL) {
+        da_push(model->int_arr, 0);
+        FURI_LOG_I("App", "Input event %d", da_count(model->int_arr));
+        view_commit_model(appview->view, true);
+    }
 
     return false;
 }
@@ -49,8 +50,8 @@ static void handle_draw(Canvas* const canvas, void* ctx) {
     canvas_draw_str_aligned(canvas, 64, 48, AlignCenter, AlignCenter, str);
 }
 
-ViewConfig view_main_config = {
-    .id = ViewMain,
+ViewConfig view_set_freq_config = {
+    .id = ViewSetFreq,
     .handle_back = handle_back,
     .handle_input = handle_input,
     .handle_draw = handle_draw,
