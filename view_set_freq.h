@@ -7,7 +7,7 @@
 DA_TYPEDEF(int, IntArrType);
 
 typedef struct {
-    IntArrType int_arr;
+    int current_frequency;
 } MainViewModel;
 
 extern ViewConfig view_set_freq_config;

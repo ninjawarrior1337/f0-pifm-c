@@ -11,43 +11,63 @@ static uint32_t handle_back(void* ctx) {
 static void handle_enter(void* ctx) {
     AppView* appview = ctx;
     view_allocate_model(appview->view, ViewModelTypeLocking, sizeof(MainViewModel));
-
     MainViewModel* model = view_get_model(appview->view);
-    da_init(model->int_arr);
+
+    model->current_frequency = 88 * 1000000;
 
     view_commit_model(appview->view, true);
 }
 
 static void handle_exit(void* ctx) {
-    AppView* appview = ctx;
-    MainViewModel* model = view_get_model(appview->view);
-    da_free(model->int_arr);
-    view_commit_model(appview->view, false);
+    UNUSED(ctx);
 }
 
 static bool handle_input(InputEvent* event, void* ctx) {
     AppView* appview = ctx;
-    UNUSED(event);
     MainViewModel* model = view_get_model(appview->view);
 
-    if(model != NULL) {
-        da_push(model->int_arr, 0);
-        FURI_LOG_I("App", "Input event %d", da_count(model->int_arr));
-        view_commit_model(appview->view, true);
+    if(event->key == InputKeyUp) {
+        if(event->type == InputTypeLong) {
+            model->current_frequency += 1000000;
+        }
+
+        if(event->type == InputTypeShort) {
+            model->current_frequency += 500000;
+        }
     }
+
+    if(event->key == InputKeyDown) {
+        if(event->type == InputTypeLong) {
+            model->current_frequency -= 1000000;
+        }
+
+        if(event->type == InputTypeShort) {
+            model->current_frequency -= 500000;
+        }
+    }
+
+    FURI_LOG_I("App", "Set frequency %d", model->current_frequency);
+    view_commit_model(appview->view, true);
 
     return false;
 }
 
 static void handle_draw(Canvas* const canvas, void* ctx) {
     MainViewModel* model = ctx;
+    UNUSED(model);
 
     canvas_clear(canvas);
-    canvas_set_font(canvas, FontPrimary);
-    canvas_draw_str_aligned(canvas, 64, 32, AlignCenter, AlignCenter, "View Dispatcher example");
-    char str[32];
-    snprintf(str, 32, "Input events: %d", da_count(model->int_arr));
-    canvas_draw_str_aligned(canvas, 64, 48, AlignCenter, AlignCenter, str);
+    canvas_set_font(canvas, FontBigNumbers);
+    char temp_str[32];
+
+    snprintf(
+        temp_str,
+        32,
+        "%d.%.2d MHz",
+        model->current_frequency / 1000000,
+        model->current_frequency % 1000000);
+
+    canvas_draw_str_aligned(canvas, 64, 32, AlignCenter, AlignCenter, temp_str);
 }
 
 ViewConfig view_set_freq_config = {
