@@ -15,7 +15,6 @@
 typedef struct app_t {
     Gui* gui;
     ViewDispatcher* view_dispatcher;
-    ViewPort* view_port;
     NotificationApp* notifications;
 } App;
 
