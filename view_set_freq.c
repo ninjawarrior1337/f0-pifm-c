@@ -13,7 +13,7 @@ static void handle_enter(void* ctx) {
     view_allocate_model(appview->view, ViewModelTypeLocking, sizeof(SetFreqModel));
     SetFreqModel* model = view_get_model(appview->view);
 
-    model->current_frequency = 88 * 1000000;
+    model->current_frequency = appview->app->saved_freq;
 
     view_commit_model(appview->view, true);
 }
@@ -31,6 +31,8 @@ static void handle_exit(void* ctx) {
     furi_delay_ms(100);
     furi_hal_uart_deinit(FuriHalUartIdLPUART1);
     furi_string_free(s);
+
+    appview->app->saved_freq = model->current_frequency;
 
     view_commit_model(appview->view, false);
 }

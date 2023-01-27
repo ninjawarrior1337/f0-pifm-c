@@ -25,6 +25,8 @@ typedef struct app_t {
     NotificationApp* notifications;
     Submenu* submenu;
 
+    int saved_freq;
+
     FuriThread* set_song_worker_thread;
     FuriStreamBuffer* set_song_worker_stream_buffer;
 } App;

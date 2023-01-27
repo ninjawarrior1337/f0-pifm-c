@@ -90,6 +90,8 @@ static uint32_t submenu_prev_callback(void* ctx) {
 static App* app_alloc() {
     App* app = malloc(sizeof(App));
 
+    app->saved_freq = 88 * 1000000;
+
     app->gui = furi_record_open(RECORD_GUI);
     app->view_dispatcher = view_dispatcher_alloc();
     view_dispatcher_enable_queue(app->view_dispatcher);
