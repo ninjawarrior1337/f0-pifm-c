@@ -1,16 +1,5 @@
 #include "view_set_song.h"
 
-static void uart_callback(UartIrqEvent e, uint8_t data, void* ctx) {
-    UNUSED(ctx);
-    UNUSED(e);
-    // AppView* appview = ctx;
-    // SetSongModel* model = view_get_model(appview->view);
-    // UNUSED(model);
-
-    FURI_LOG_I(TAG, "%c", data);
-    // view_commit_model(appview->view, false);
-}
-
 typedef enum {
     WorkerEventStop = (1 << 0),
     WorkerEventRx = (1 << 1),
@@ -18,10 +7,26 @@ typedef enum {
 
 #define WORKER_EVENTS_MASK (WorkerEventStop | WorkerEventRx)
 
+static void uart_callback(UartIrqEvent e, uint8_t data, void* ctx) {
+    furi_assert(ctx);
+    AppView* av = ctx;
+
+    if(e == UartIrqEventRXNE) {
+        furi_stream_buffer_send(av->app->set_song_worker_stream_buffer, &data, 1, 0);
+        furi_thread_flags_set(furi_thread_get_id(av->app->set_song_worker_thread), WorkerEventRx);
+    }
+}
+
+static void handle_rx(SetSongModel* model, const char data) {
+    UNUSED(model);
+    FURI_LOG_D(TAG, "Worker RX: %c", data);
+}
+
 static int32_t set_song_uart_worker(void* ctx) {
     furi_assert(ctx);
     AppView* appview = ctx;
-    UNUSED(appview);
+
+    FURI_LOG_D(TAG, "PiFM Uart Worker Started");
 
     while(1) {
         uint32_t events =
@@ -31,7 +36,29 @@ static int32_t set_song_uart_worker(void* ctx) {
         if(events & WorkerEventStop) {
             break;
         }
+
+        if(events & WorkerEventRx) {
+            size_t length = 0;
+            do {
+                uint8_t data[64];
+
+                length = furi_stream_buffer_receive(
+                    appview->app->set_song_worker_stream_buffer, data, sizeof(data), 0);
+
+                if(length > 0) {
+                    SetSongModel* model = view_get_model(appview->view);
+                    for(size_t i = 0; i < length; i++) {
+                        handle_rx(model, data[i]);
+                    }
+                    view_commit_model(appview->view, false);
+                }
+            } while(length > 0);
+            with_view_model(
+                appview->view, SetSongModel * m, { UNUSED(m); }, true);
+        }
     }
+
+    FURI_LOG_D(TAG, "PiFM Uart Worker Stopped");
 
     return 0;
 }
@@ -40,6 +67,7 @@ static void handle_enter(void* ctx) {
     AppView* appview = ctx;
     view_allocate_model(appview->view, ViewModelTypeLocking, sizeof(SetSongModel));
 
+    appview->app->set_song_worker_stream_buffer = furi_stream_buffer_alloc(2048, 1);
     appview->app->set_song_worker_thread =
         furi_thread_alloc_ex("PiFMUartWorker", 1024, set_song_uart_worker, ctx);
     furi_thread_start(appview->app->set_song_worker_thread);
@@ -59,6 +87,7 @@ static void handle_exit(void* ctx) {
         furi_thread_get_id(appview->app->set_song_worker_thread), WorkerEventStop);
     furi_thread_join(appview->app->set_song_worker_thread);
     furi_thread_free(appview->app->set_song_worker_thread);
+    furi_stream_buffer_free(appview->app->set_song_worker_stream_buffer);
 }
 
 static uint32_t handle_back(void* ctx) {

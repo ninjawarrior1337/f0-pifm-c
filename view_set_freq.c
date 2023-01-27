@@ -59,7 +59,7 @@ static bool handle_input(InputEvent* event, void* ctx) {
         }
     }
 
-    FURI_LOG_I(TAG, "Set frequency %d", model->current_frequency);
+    FURI_LOG_D(TAG, "Set frequency %d", model->current_frequency);
     view_commit_model(appview->view, true);
 
     return false;

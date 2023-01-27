@@ -56,7 +56,7 @@ static void submenu_select_callback(void* ctx, uint32_t index) {
     App* app = ctx;
     UNUSED(app);
 
-    FURI_LOG_I(TAG, "selected %d", e);
+    FURI_LOG_D(TAG, "Selected %d", e);
     switch(e) {
     case PiFMStart:
     case PiFMStop:
