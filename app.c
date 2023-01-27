@@ -59,9 +59,9 @@ static void submenu_select_callback(void* ctx, uint32_t index) {
         furi_hal_uart_init(FuriHalUartIdLPUART1, BAUDRATE);
         FuriString* cmd = furi_string_alloc();
         if(e == PiFMStart) {
-            furi_string_cat_str(cmd, "start");
+            furi_string_cat_str(cmd, "start\n");
         } else if(e == PiFMStop) {
-            furi_string_cat_str(cmd, "stop");
+            furi_string_cat_str(cmd, "stop\n");
         }
         furi_hal_uart_tx(
             FuriHalUartIdLPUART1, (uint8_t*)furi_string_get_cstr(cmd), furi_string_size(cmd));
