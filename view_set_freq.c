@@ -10,8 +10,8 @@ static uint32_t handle_back(void* ctx) {
 
 static void handle_enter(void* ctx) {
     AppView* appview = ctx;
-    view_allocate_model(appview->view, ViewModelTypeLocking, sizeof(MainViewModel));
-    MainViewModel* model = view_get_model(appview->view);
+    view_allocate_model(appview->view, ViewModelTypeLocking, sizeof(SetFreqModel));
+    SetFreqModel* model = view_get_model(appview->view);
 
     model->current_frequency = 88 * 1000000;
 
@@ -20,7 +20,7 @@ static void handle_enter(void* ctx) {
 
 static void handle_exit(void* ctx) {
     AppView* appview = ctx;
-    MainViewModel* model = view_get_model(appview->view);
+    SetFreqModel* model = view_get_model(appview->view);
 
     furi_hal_uart_init(FuriHalUartIdLPUART1, BAUDRATE);
     FuriString* s = furi_string_alloc_printf(
@@ -37,7 +37,7 @@ static void handle_exit(void* ctx) {
 
 static bool handle_input(InputEvent* event, void* ctx) {
     AppView* appview = ctx;
-    MainViewModel* model = view_get_model(appview->view);
+    SetFreqModel* model = view_get_model(appview->view);
 
     if(event->key == InputKeyUp) {
         if(event->type == InputTypeRepeat) {
@@ -66,7 +66,7 @@ static bool handle_input(InputEvent* event, void* ctx) {
 }
 
 static void handle_draw(Canvas* const canvas, void* ctx) {
-    MainViewModel* model = ctx;
+    SetFreqModel* model = ctx;
     UNUSED(model);
 
     canvas_clear(canvas);

@@ -14,6 +14,8 @@
 #include <furi_hal_uart.h>
 #include <notification/notification_messages.h>
 
+#include "DG_dynarr.h"
+
 #define TAG "PiFM-F0"
 #define BAUDRATE 115200
 
@@ -22,14 +24,23 @@ typedef struct app_t {
     ViewDispatcher* view_dispatcher;
     NotificationApp* notifications;
     Submenu* submenu;
+
+    FuriThread* set_song_worker_thread;
+    FuriStreamBuffer* set_song_worker_stream_buffer;
 } App;
 
 typedef enum {
     ViewMain,
     ViewSetFreq,
+    ViewSetSong,
 } ViewID;
 
-typedef enum { PiFMStart, PiFMStop, PiFMSetFreq, PiFMSetSong } PiFMSubmenuEntries;
+typedef enum {
+    PiFMStart,
+    PiFMStop,
+    PiFMSetFreq,
+    PiFMSetSong,
+} PiFMSubmenuEntries;
 
 typedef struct {
     ViewID id;

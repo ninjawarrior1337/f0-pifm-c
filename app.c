@@ -2,12 +2,15 @@
 
 #include "app.h"
 #include "view_set_freq.h"
+#include "view_set_song.h"
 
 static AppViewState views[] = {
     {
         .config = &view_set_freq_config,
     },
-};
+    {
+        .config = &view_set_song_config,
+    }};
 
 static const unsigned views_count = COUNT_OF(views);
 
@@ -27,6 +30,7 @@ static void app_views_alloc(App* app) {
         views[i].context->view = view_alloc();
         views[i].context->app = app;
         view_set_context(views[i].context->view, views[i].context);
+
         view_set_enter_callback(views[i].context->view, views[i].config->handle_enter);
         view_set_exit_callback(views[i].context->view, views[i].config->handle_exit);
         view_set_draw_callback(views[i].context->view, views[i].config->handle_draw);
@@ -73,6 +77,7 @@ static void submenu_select_callback(void* ctx, uint32_t index) {
         view_dispatcher_switch_to_view(app->view_dispatcher, ViewSetFreq);
         break;
     case PiFMSetSong:
+        view_dispatcher_switch_to_view(app->view_dispatcher, ViewSetSong);
         break;
     }
 }
