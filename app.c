@@ -4,13 +4,9 @@
 #include "view_set_freq.h"
 #include "view_set_song.h"
 
-static AppViewState views[] = {
-    {
-        .config = &view_set_freq_config,
-    },
-    {
-        .config = &view_set_song_config,
-    }};
+static AppViewState views[] = {{
+    .config = &view_set_freq_config,
+}};
 
 static const unsigned views_count = COUNT_OF(views);
 
@@ -22,6 +18,7 @@ static void app_views_free(App* app) {
         view_free_model(views[i].context->view);
         free(views[i].context);
     }
+    song_select_view_free(app);
 }
 
 static void app_views_alloc(App* app) {
@@ -39,6 +36,7 @@ static void app_views_alloc(App* app) {
             app->view_dispatcher, views[i].config->id, views[i].context->view);
         view_set_previous_callback(views[i].context->view, views[i].config->handle_back);
     }
+    song_select_view_alloc(app);
 }
 
 static void app_free(App* app) {

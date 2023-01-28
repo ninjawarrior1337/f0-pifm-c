@@ -25,10 +25,13 @@ typedef struct app_t {
     NotificationApp* notifications;
     Submenu* submenu;
 
+    // Frequency save
     int saved_freq;
 
-    FuriThread* set_song_worker_thread;
-    FuriStreamBuffer* set_song_worker_stream_buffer;
+    // Set Song Data
+    FuriThread* song_select_worker_thread;
+    FuriStreamBuffer* song_select_stream_buf;
+    Submenu* song_select_submenu;
 } App;
 
 typedef enum {

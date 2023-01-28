@@ -12,8 +12,9 @@ static void uart_callback(UartIrqEvent e, uint8_t data, void* ctx) {
     AppView* av = ctx;
 
     if(e == UartIrqEventRXNE) {
-        furi_stream_buffer_send(av->app->set_song_worker_stream_buffer, &data, 1, 0);
-        furi_thread_flags_set(furi_thread_get_id(av->app->set_song_worker_thread), WorkerEventRx);
+        furi_stream_buffer_send(av->app->song_select_stream_buf, &data, 1, 0);
+        furi_thread_flags_set(
+            furi_thread_get_id(av->app->song_select_worker_thread), WorkerEventRx);
     }
 }
 
@@ -43,7 +44,7 @@ static int32_t set_song_uart_worker(void* ctx) {
                 uint8_t data[64];
 
                 length = furi_stream_buffer_receive(
-                    appview->app->set_song_worker_stream_buffer, data, sizeof(data), 0);
+                    appview->app->song_select_stream_buf, data, sizeof(data), 0);
 
                 if(length > 0) {
                     SetSongModel* model = view_get_model(appview->view);
@@ -67,10 +68,10 @@ static void handle_enter(void* ctx) {
     AppView* appview = ctx;
     view_allocate_model(appview->view, ViewModelTypeLocking, sizeof(SetSongModel));
 
-    appview->app->set_song_worker_stream_buffer = furi_stream_buffer_alloc(2048, 1);
-    appview->app->set_song_worker_thread =
+    appview->app->song_select_stream_buf = furi_stream_buffer_alloc(2048, 1);
+    appview->app->song_select_worker_thread =
         furi_thread_alloc_ex("PiFMUartWorker", 1024, set_song_uart_worker, ctx);
-    furi_thread_start(appview->app->set_song_worker_thread);
+    furi_thread_start(appview->app->song_select_worker_thread);
 
     furi_hal_uart_init(FuriHalUartIdLPUART1, BAUDRATE);
     furi_hal_uart_tx(FuriHalUartIdLPUART1, (uint8_t*)"get songs\n", 10);
@@ -84,10 +85,10 @@ static void handle_exit(void* ctx) {
     AppView* appview = ctx;
     furi_hal_uart_deinit(FuriHalUartIdLPUART1);
     furi_thread_flags_set(
-        furi_thread_get_id(appview->app->set_song_worker_thread), WorkerEventStop);
-    furi_thread_join(appview->app->set_song_worker_thread);
-    furi_thread_free(appview->app->set_song_worker_thread);
-    furi_stream_buffer_free(appview->app->set_song_worker_stream_buffer);
+        furi_thread_get_id(appview->app->song_select_worker_thread), WorkerEventStop);
+    furi_thread_join(appview->app->song_select_worker_thread);
+    furi_thread_free(appview->app->song_select_worker_thread);
+    furi_stream_buffer_free(appview->app->song_select_stream_buf);
 }
 
 static uint32_t handle_back(void* ctx) {
@@ -96,23 +97,27 @@ static uint32_t handle_back(void* ctx) {
     return ViewMain;
 }
 
-static void handle_draw(Canvas* canvas, void* model) {
-    UNUSED(model);
-    canvas_draw_str_aligned(canvas, 64, 32, AlignCenter, AlignCenter, "Hello World");
+void song_select_view_alloc(App* app) {
+    ViewConfig c = view_set_song_config;
+    app->song_select_submenu = submenu_alloc();
+    submenu_set_header(app->song_select_submenu, "Set Song");
+    View* v = submenu_get_view(app->song_select_submenu);
+
+    view_set_previous_callback(v, c.handle_back);
+    // view_set_enter_callback(v, c.handle_enter);
+    // view_set_exit_callback(v, c.handle_exit);
+    view_dispatcher_add_view(app->view_dispatcher, c.id, v);
 }
 
-static bool handle_input(InputEvent* e, void* ctx) {
-    UNUSED(e);
-    UNUSED(ctx);
-
-    return false;
+void song_select_view_free(App* a) {
+    view_dispatcher_remove_view(a->view_dispatcher, ViewSetSong);
+    // view_free_model(submenu_get_view(a->song_select_submenu));
+    submenu_free(a->song_select_submenu);
 }
 
 ViewConfig view_set_song_config = {
     .id = ViewSetSong,
     .handle_enter = handle_enter,
-    .handle_input = handle_input,
-    .handle_draw = handle_draw,
     .handle_exit = handle_exit,
     .handle_back = handle_back,
 };

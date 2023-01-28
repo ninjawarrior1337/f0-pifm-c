@@ -10,3 +10,6 @@ typedef struct {
 } SetSongModel;
 
 extern ViewConfig view_set_song_config;
+
+void song_select_view_alloc(App* a);
+void song_select_view_free(App* a);
