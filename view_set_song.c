@@ -7,6 +7,10 @@ typedef enum {
 
 #define WORKER_EVENTS_MASK (WorkerEventStop | WorkerEventRx)
 
+static AppViewState view_select_song_state = {
+    .config = &view_set_song_config,
+};
+
 static void uart_callback(UartIrqEvent e, uint8_t data, void* ctx) {
     furi_assert(ctx);
     AppView* av = ctx;
@@ -65,8 +69,9 @@ static int32_t set_song_uart_worker(void* ctx) {
 }
 
 static void handle_enter(void* ctx) {
-    AppView* appview = ctx;
-    view_allocate_model(appview->view, ViewModelTypeLocking, sizeof(SetSongModel));
+    UNUSED(ctx);
+    AppView* appview = view_select_song_state.context;
+    // view_allocate_model(appview->view, ViewModelTypeLocking, sizeof(SetSongModel));
 
     appview->app->song_select_stream_buf = furi_stream_buffer_alloc(2048, 1);
     appview->app->song_select_worker_thread =
@@ -82,7 +87,8 @@ static void handle_enter(void* ctx) {
 }
 
 static void handle_exit(void* ctx) {
-    AppView* appview = ctx;
+    UNUSED(ctx);
+    AppView* appview = view_select_song_state.context;
     furi_hal_uart_deinit(FuriHalUartIdLPUART1);
     furi_thread_flags_set(
         furi_thread_get_id(appview->app->song_select_worker_thread), WorkerEventStop);
@@ -98,19 +104,23 @@ static uint32_t handle_back(void* ctx) {
 }
 
 void song_select_view_alloc(App* app) {
-    ViewConfig c = view_set_song_config;
     app->song_select_submenu = submenu_alloc();
     submenu_set_header(app->song_select_submenu, "Set Song");
     View* v = submenu_get_view(app->song_select_submenu);
 
-    view_set_previous_callback(v, c.handle_back);
-    // view_set_enter_callback(v, c.handle_enter);
-    // view_set_exit_callback(v, c.handle_exit);
-    view_dispatcher_add_view(app->view_dispatcher, c.id, v);
+    view_select_song_state.context = malloc(sizeof(AppView));
+    view_select_song_state.context->view = v;
+    view_select_song_state.context->app = app;
+
+    view_set_previous_callback(v, view_select_song_state.config->handle_back);
+    view_set_enter_callback(v, view_select_song_state.config->handle_enter);
+    view_set_exit_callback(v, view_select_song_state.config->handle_exit);
+    view_dispatcher_add_view(app->view_dispatcher, view_select_song_state.config->id, v);
 }
 
 void song_select_view_free(App* a) {
     view_dispatcher_remove_view(a->view_dispatcher, ViewSetSong);
+    free(view_select_song_state.context);
     // view_free_model(submenu_get_view(a->song_select_submenu));
     submenu_free(a->song_select_submenu);
 }
