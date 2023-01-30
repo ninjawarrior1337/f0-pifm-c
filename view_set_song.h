@@ -7,7 +7,8 @@ DA_TYPEDEF(FuriString*, FuriStringArray)
 typedef struct {
     FuriStringArray songs;
     FuriString* current_string;
-} SetSongModel;
+    FuriMutex* mutex;
+} SelectSongModel;
 
 extern ViewConfig view_set_song_config;
 

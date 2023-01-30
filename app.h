@@ -64,4 +64,5 @@ typedef struct {
 typedef struct {
     ViewConfig* config;
     AppView* context;
+    void* raw_model;
 } AppViewState;

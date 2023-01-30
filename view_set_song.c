@@ -22,8 +22,13 @@ static void uart_callback(UartIrqEvent e, uint8_t data, void* ctx) {
     }
 }
 
-static void handle_rx(SetSongModel* model, const char data) {
-    UNUSED(model);
+static void handle_rx(SelectSongModel* model, const char data) {
+    switch(data) {
+    case '\n':
+        break;
+    default:
+        break;
+    }
     FURI_LOG_D(TAG, "Worker RX: %c", data);
 }
 
@@ -51,15 +56,15 @@ static int32_t set_song_uart_worker(void* ctx) {
                     appview->app->song_select_stream_buf, data, sizeof(data), 0);
 
                 if(length > 0) {
-                    SetSongModel* model = view_get_model(appview->view);
+                    SelectSongModel* model = view_select_song_state.raw_model;
+                    FuriStatus status = furi_mutex_acquire(model->mutex, FuriWaitForever);
+                    furi_assert(status == FuriStatusOk);
                     for(size_t i = 0; i < length; i++) {
                         handle_rx(model, data[i]);
                     }
-                    view_commit_model(appview->view, false);
+                    furi_mutex_release(model->mutex);
                 }
             } while(length > 0);
-            with_view_model(
-                appview->view, SetSongModel * m, { UNUSED(m); }, true);
         }
     }
 
@@ -71,7 +76,10 @@ static int32_t set_song_uart_worker(void* ctx) {
 static void handle_enter(void* ctx) {
     UNUSED(ctx);
     AppView* appview = view_select_song_state.context;
-    // view_allocate_model(appview->view, ViewModelTypeLocking, sizeof(SetSongModel));
+
+    view_select_song_state.raw_model = malloc(sizeof(SelectSongModel));
+    SelectSongModel* m = view_select_song_state.raw_model;
+    m->mutex = furi_mutex_alloc(FuriMutexTypeNormal);
 
     appview->app->song_select_stream_buf = furi_stream_buffer_alloc(2048, 1);
     appview->app->song_select_worker_thread =
@@ -89,12 +97,16 @@ static void handle_enter(void* ctx) {
 static void handle_exit(void* ctx) {
     UNUSED(ctx);
     AppView* appview = view_select_song_state.context;
+    SelectSongModel* m = view_select_song_state.raw_model;
+
     furi_hal_uart_deinit(FuriHalUartIdLPUART1);
     furi_thread_flags_set(
         furi_thread_get_id(appview->app->song_select_worker_thread), WorkerEventStop);
     furi_thread_join(appview->app->song_select_worker_thread);
     furi_thread_free(appview->app->song_select_worker_thread);
     furi_stream_buffer_free(appview->app->song_select_stream_buf);
+
+    furi_mutex_free(m->mutex);
 }
 
 static uint32_t handle_back(void* ctx) {
@@ -121,7 +133,6 @@ void song_select_view_alloc(App* app) {
 void song_select_view_free(App* a) {
     view_dispatcher_remove_view(a->view_dispatcher, ViewSetSong);
     free(view_select_song_state.context);
-    // view_free_model(submenu_get_view(a->song_select_submenu));
     submenu_free(a->song_select_submenu);
 }
 
