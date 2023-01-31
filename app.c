@@ -3,6 +3,7 @@
 #include "app.h"
 #include "view_set_freq.h"
 #include "view_set_song.h"
+#include <notification/notification_messages.h>
 
 static AppViewState views[] = {{
     .config = &view_set_freq_config,
@@ -70,6 +71,7 @@ static void submenu_select_callback(void* ctx, uint32_t index) {
         furi_delay_ms(100);
         furi_hal_uart_deinit(FuriHalUartIdLPUART1);
         furi_string_free(cmd);
+        notification_message_block(app->notifications, &sequence_blink_blue_100);
         break;
     case PiFMSetFreq:
         view_dispatcher_switch_to_view(app->view_dispatcher, ViewSetFreq);
