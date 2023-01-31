@@ -22,15 +22,13 @@ static void handle_exit(void* ctx) {
     AppView* appview = ctx;
     SetFreqModel* model = view_get_model(appview->view);
 
-    furi_hal_uart_init(FuriHalUartIdLPUART1, BAUDRATE);
     FuriString* s = furi_string_alloc_printf(
         "set freq %d.%.1d\n",
         model->current_frequency / 1000000,
         (model->current_frequency % 1000000) / 100000);
     furi_hal_uart_tx(FuriHalUartIdLPUART1, (uint8_t*)furi_string_get_cstr(s), furi_string_size(s));
-    furi_delay_ms(100);
-    furi_hal_uart_deinit(FuriHalUartIdLPUART1);
     furi_string_free(s);
+    notification_message(appview->app->notifications, &sequence_blink_blue_100);
 
     appview->app->saved_freq = model->current_frequency;
 

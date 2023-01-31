@@ -158,19 +158,17 @@ static void handle_enter(void* ctx) {
         furi_thread_alloc_ex("PiFMUartWorker", 1024, set_song_uart_worker, appview);
     furi_thread_start(appview->app->song_select_worker_thread);
 
-    furi_hal_uart_init(FuriHalUartIdLPUART1, BAUDRATE);
+    furi_hal_uart_set_irq_cb(FuriHalUartIdLPUART1, uart_callback, appview);
     furi_hal_uart_tx(FuriHalUartIdLPUART1, (uint8_t*)"get songs\n", 10);
     furi_delay_ms(100);
-
-    // UNUSED(uart_callback);
-    furi_hal_uart_set_irq_cb(FuriHalUartIdLPUART1, uart_callback, appview);
 }
 
 static void handle_exit(void* ctx) {
     UNUSED(ctx);
     AppView* appview = view_select_song_state.context;
 
-    furi_hal_uart_deinit(FuriHalUartIdLPUART1);
+    furi_hal_uart_set_irq_cb(FuriHalUartIdLPUART1, NULL, NULL);
+
     furi_thread_flags_set(
         furi_thread_get_id(appview->app->song_select_worker_thread), WorkerEventStop);
     furi_thread_join(appview->app->song_select_worker_thread);

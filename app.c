@@ -58,8 +58,7 @@ static void submenu_select_callback(void* ctx, uint32_t index) {
     FURI_LOG_D(TAG, "Selected %d", e);
     switch(e) {
     case PiFMStart:
-    case PiFMStop:
-        furi_hal_uart_init(FuriHalUartIdLPUART1, BAUDRATE);
+    case PiFMStop:;
         FuriString* cmd = furi_string_alloc();
         if(e == PiFMStart) {
             furi_string_cat_str(cmd, "start\n");
@@ -68,10 +67,8 @@ static void submenu_select_callback(void* ctx, uint32_t index) {
         }
         furi_hal_uart_tx(
             FuriHalUartIdLPUART1, (uint8_t*)furi_string_get_cstr(cmd), furi_string_size(cmd));
-        furi_delay_ms(100);
-        furi_hal_uart_deinit(FuriHalUartIdLPUART1);
         furi_string_free(cmd);
-        notification_message_block(app->notifications, &sequence_blink_blue_100);
+        notification_message(app->notifications, &sequence_blink_blue_100);
         break;
     case PiFMSetFreq:
         view_dispatcher_switch_to_view(app->view_dispatcher, ViewSetFreq);
@@ -116,7 +113,9 @@ static App* app_alloc() {
 
 int32_t app_entry_point(void) {
     App* app = app_alloc();
+    furi_hal_uart_init(FuriHalUartIdLPUART1, BAUDRATE);
     view_dispatcher_run(app->view_dispatcher);
     app_free(app);
+    furi_hal_uart_deinit(FuriHalUartIdLPUART1);
     return 0;
 }
