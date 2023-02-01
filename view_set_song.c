@@ -28,7 +28,7 @@ static void on_view_select_song_submenu_select(void* context, uint32_t index) {
     char tmp[32];
     snprintf(tmp, sizeof(tmp), "set song %ld\n", index);
 
-    furi_hal_uart_tx(FuriHalUartIdLPUART1, (uint8_t*)tmp, strlen(tmp) - 1);
+    furi_hal_uart_tx(FuriHalUartIdLPUART1, (uint8_t*)tmp, strlen(tmp));
     furi_delay_ms(100);
 
     view_dispatcher_switch_to_view(view_select_song_state.context->app->view_dispatcher, ViewMain);
