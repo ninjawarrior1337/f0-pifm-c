@@ -91,12 +91,9 @@ static int32_t set_song_uart_worker(void* ctx) {
 
                 if(length > 0) {
                     SelectSongModel* model = view_select_song_state.raw_model;
-                    FuriStatus status = furi_mutex_acquire(model->mutex, FuriWaitForever);
-                    furi_assert(status == FuriStatusOk);
                     for(size_t i = 0; i < length; i++) {
                         handle_rx(model, data[i]);
                     }
-                    furi_mutex_release(model->mutex);
                 }
             } while(length > 0);
         }
