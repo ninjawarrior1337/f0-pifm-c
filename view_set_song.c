@@ -90,14 +90,13 @@ static int32_t set_song_uart_worker(void* ctx) {
                     appview->app->song_select_stream_buf, data, sizeof(data), 0);
 
                 if(length > 0) {
-                    // SelectSongModel* model = view_select_song_state.raw_model;
-                    // FuriStatus status = furi_mutex_acquire(model->mutex, FuriWaitForever);
-                    // furi_assert(status == FuriStatusOk);
+                    SelectSongModel* model = view_select_song_state.raw_model;
+                    FuriStatus status = furi_mutex_acquire(model->mutex, FuriWaitForever);
+                    furi_assert(status == FuriStatusOk);
                     for(size_t i = 0; i < length; i++) {
-                        // handle_rx(model, data[i]);
-                        UNUSED(handle_rx);
+                        handle_rx(model, data[i]);
                     }
-                    // furi_mutex_release(model->mutex);
+                    furi_mutex_release(model->mutex);
                 }
             } while(length > 0);
         }
