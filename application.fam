@@ -1,10 +1,18 @@
+# For details & more options, see documentation/AppManifests.md in firmware repo
+
 App(
-    appid="pifm",
-    name="PiFM",
+    appid="pifm",  # Must be unique
+    name="PiFM",  # Displayed in menus
     apptype=FlipperAppType.EXTERNAL,
-    entry_point="app_entry_point",
-    cdefines=["APP_PIFM"],
+    entry_point="pifm_entrypoint",
+    stack_size=2 * 1024,
+    fap_category="GPIO",
     requires=["gui"],
-    stack_size=1 * 1024,
-    fap_icon="pifm.png",
+    # Optional values
+    # fap_version="0.1",
+    fap_icon="pifm.png",  # 10x10 1-bit PNG
+    # fap_description="A simple app",
+    fap_author="Treelar",
+    fap_weburl="https://github.com/ninjawarrior1337/f0-pifm-c",
+    fap_icon_assets="images",  # Image assets to compile for this application
 )
